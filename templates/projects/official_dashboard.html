@@ -1,0 +1,207 @@
+
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Official Dashboard | Nagarik Budget Watch{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="mb-4">
+        <h2 class="fw-bold">Official Dashboard</h2>
+        <p class="text-muted">
+            Monitor development projects, budgets, and citizen inquiries.
+        </p>
+        {% if user.role == "official" %}
+            <span class="badge bg-primary">{{ user.department }}</span>
+        {% else %}
+            <span class="badge bg-dark">Administrator</span>
+        {% endif %}
+    </div>
+
+    <!-- Statistics -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">
+                        {% if user.role == "admin" %}
+                            Total Development Projects
+                        {% else %}
+                            Assigned Projects
+                        {% endif %}
+                    </h6>
+                    <h2 class="fw-bold">{{ total_projects }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Inquiries</h6>
+                    <h2 class="fw-bold">{{ total_inquiries }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Pending Inquiries</h6>
+                    <h2 class="fw-bold text-warning">{{ pending_inquiries }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Answered Inquiries</h6>
+                    <h2 class="fw-bold text-success">{{ answered_inquiries }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Average Project Progress</h6>
+                    <h2 class="fw-bold">{{ average_progress }}%</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Allocated Budget</h6>
+                    <h5 class="fw-bold">Rs. {{ total_budget|floatformat:0|intcomma }}</h5>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Budget Overview -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <h5 class="fw-bold mb-3">Budget Overview</h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <p class="text-muted mb-1">Allocated Budget</p>
+                    <h4>Rs. {{ total_budget|floatformat:0|intcomma }}</h4>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <p class="text-muted mb-1">Actual Expenditure</p>
+                    <h4>Rs. {{ total_expenditure|floatformat:0|intcomma }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Projects -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <h5 class="fw-bold mb-3">Department Projects</h5>
+
+            {% if projects %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Project</th>
+                            {% if user.role == "admin" %}
+                                <th>Department</th>
+                            {% endif %}
+                            <th>Progress</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for project in projects %}
+                        <tr>
+                            <td>{{ project.name }}</td>
+                            {% if user.role == "admin" %}
+                                <td>{{ project.department }}</td>
+                            {% endif %}
+                            <td style="min-width: 130px;">
+                                <div class="progress-bar"
+                                     role="progressbar"
+                                     style="width: 0%;"
+                                     data-progress="{{ project.physical_progress }}">
+                                </div>
+                                
+                                <small>{{ project.physical_progress }}%</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">
+                                    {{ project.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'project_detail' project.pk %}"
+                                   class="btn btn-sm btn-outline-primary">
+                                    View
+                                </a>
+                                <a href="{% url 'add_project_update' project.pk %}"
+                                   class="btn btn-sm btn-outline-success">
+                                    Update
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <p class="text-muted mb-0">No projects are currently assigned.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Inquiries -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body">
+            <h5 class="fw-bold mb-3">Recent Citizen Inquiries</h5>
+
+            {% if recent_inquiries %}
+                {% for inquiry in recent_inquiries %}
+                    <div class="border-bottom py-3">
+                        <div class="d-flex justify-content-between flex-wrap gap-2">
+                            <strong>{{ inquiry.subject }}</strong>
+                            <span class="badge
+                                {% if inquiry.status == 'answered' %}bg-success
+                                {% elif inquiry.status == 'in_progress' %}bg-info
+                                {% else %}bg-warning text-dark{% endif %}">
+                                {{ inquiry.get_status_display }}
+                            </span>
+                        </div>
+
+                        <p class="text-muted small mb-1">
+                            By {{ inquiry.citizen.username }}
+                            · {{ inquiry.created_at|date:"d M Y" }}
+                        </p>
+
+                        <p class="mb-2">{{ inquiry.question|truncatewords:20 }}</p>
+
+                        {% if user.role == "admin" or not inquiry.project or inquiry.project.department_id == user.department_id %}
+                            <a href="{% url 'inquiry_respond' inquiry.pk %}"
+                               class="btn btn-sm btn-outline-primary">
+                                Respond to Inquiry
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted mb-0">No citizen inquiries found.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    
+
+</div>
+{% endblock %}

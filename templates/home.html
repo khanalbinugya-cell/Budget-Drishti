@@ -1,0 +1,366 @@
+
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Home | Budget Drishti{% endblock %}
+
+{% block content %}
+
+<!-- Welcome section -->
+<section class="hero p-4 p-md-5 mb-4 rounded-4">
+    <span class="eyebrow">BUDGET INFORMATION · CITIZEN PARTICIPATION</span>
+
+    <h1 class="display-5 fw-bold mt-3">
+        Understand your budget.<br>
+        Follow your development.
+    </h1>
+
+    <p class="lead col-lg-8 mt-3">
+        Explore how public money is planned and spent,
+        follow local development projects, and ask questions
+        about your community.
+    </p>
+
+    <div class="mt-4">
+        <a href="{% url 'budget_overview' %}"
+           class="btn btn-primary btn-lg me-2 mb-2">
+            Explore Budget
+        </a>
+
+        <a href="{% url 'project_list' %}"
+           class="btn btn-outline-primary btn-lg mb-2">
+            View Projects
+        </a>
+    </div>
+</section>
+
+
+
+
+<!-- Municipality overview -->
+
+<section class="mb-4">
+    <h3 class="fw-bold mb-1">Your Municipality at a Glance</h3>
+
+    <p class="text-muted mb-3">
+        Understand how the municipality plans and uses its budget
+        and what development activities are underway.
+    </p>
+
+    <div class="row g-3">
+
+        <div class="col-6 col-lg-3">
+            <div class="stat-card h-100">
+                <span>Planned Budget</span>
+                <h3>Rs. {{ allocated|floatformat:0 |intcomma}}</h3>
+                <small>Estimated allocation · {{ current_year|default:"Demo year" }}</small>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="stat-card h-100">
+                <span>Estimated Spending</span>
+                <h3>Rs. {{ spent|floatformat:0|intcomma }}</h3>
+                <small>Illustrative spending figure</small>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="stat-card h-100">
+                <span>Budget Used</span>
+                <h3>{{ utilization }}%</h3>
+                <small>Estimated share of planned budget</small>
+            </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+            <div class="stat-card h-100">
+                <span>Development Projects</span>
+                <h3>{{ project_count }}</h3>
+                <small>
+                    {{ active_count }} ongoing ·
+                    {{ completed_count }} completed
+                </small>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+
+
+<!-- Main information sections -->
+<div class="row g-4">
+
+    
+<!-- Budget information -->
+<div class="col-lg-6">
+    <div class="panel h-100" data-total-budget="{{ allocated }}">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Where Does the Money Go?</h4>
+
+            <a href="{% url 'budget_overview' %}"
+               class="small text-decoration-none">
+                View all
+            </a>
+        </div>
+
+        <p class="text-muted small">
+            Explore how the estimated budget is distributed across different sectors.
+        </p>
+
+        {% for sector in sector_rows %}
+            <div class="project-line">
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <strong>{{ sector.name }}</strong>
+                    <strong>Rs. {{ sector.allocated|floatformat:0|intcomma }}</strong>
+                </div>
+
+                <div class="progress mt-2 mb-2">
+                    <div class="progress-bar"
+                         role="progressbar"
+                         style="width: 0%;"
+                         data-budget="{{ sector.allocated }}"
+                         aria-valuemin="0"
+                         aria-valuemax="100">
+                    </div>
+                </div>
+
+                <small class="text-muted">
+                    Estimated spending: Rs. {{ sector.spent|floatformat:0|intcomma }}
+                </small>
+
+            </div>
+
+        {% empty %}
+            <p class="text-muted">
+                No budget information available yet.
+            </p>
+        {% endfor %}
+
+        <a href="{% url 'budget_overview' %}"
+           class="btn btn-outline-primary btn-sm mt-3">
+            Explore Budget Details
+        </a>
+
+    </div>
+</div>
+
+
+
+    <!-- Development projects -->
+    <div class="col-lg-6">
+        <div class="panel h-100">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">Local Development Projects</h4>
+
+                <a href="{% url 'project_list' %}"
+                   class="small text-decoration-none">
+                    View all
+                </a>
+            </div>
+
+            <p class="text-muted small">
+                Follow the progress of development activities.
+            </p>
+
+            {% for project in projects %}
+
+                <div class="project-line">
+
+                    <div class="d-flex justify-content-between gap-2">
+                        <strong>{{ project.name }}</strong>
+
+                        <span class="badge text-bg-light">
+                            {{ project.get_status_display }}
+                        </span>
+                    </div>
+
+                    <small class="text-muted">
+                        {{ project.location }}
+                    </small>
+
+                    <div class="d-flex justify-content-between mt-2">
+                        <small class="text-muted">Physical progress</small>
+                        <strong>{{ project.physical_progress }}%</strong>
+                    </div>
+
+                    <div class="progress mt-2">
+                        <div class="progress-bar"
+                             role="progressbar"
+                             style="width: 0%;"
+                             data-progress="{{ project.physical_progress }}"
+                             aria-valuenow="{{ project.physical_progress }}"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+
+                </div>
+
+            {% empty %}
+
+                <p class="text-muted">
+                    No development projects have been added yet.
+                </p>
+
+            {% endfor %}
+
+            <a href="{% url 'project_list' %}"
+               class="btn btn-outline-primary btn-sm mt-3">
+                Explore All Projects
+            </a>
+
+        </div>
+    </div>
+
+</div>
+
+
+<!-- Latest updates -->
+<section class="panel mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">Latest Development Updates</h4>
+
+        <a href="{% url 'project_list' %}"
+           class="small text-decoration-none">
+            View projects
+        </a>
+    </div>
+
+    {% for update in updates %}
+
+        <div class="project-line">
+
+            <div class="d-flex justify-content-between flex-wrap gap-2">
+                <strong>{{ update.project.name }}</strong>
+
+                <small class="text-muted">
+                    {{ update.created_at|date:"M d, Y" }}
+                </small>
+            </div>
+
+            <p class="mt-2 mb-1">{{ update.remarks }}</p>
+
+            <small class="text-muted">
+                Physical progress: {{ update.physical_progress }}%
+            </small>
+
+        </div>
+
+    {% empty %}
+
+        <p class="text-muted mb-0">
+            No development updates have been published yet.
+        </p>
+
+    {% endfor %}
+
+</section>
+
+
+<!-- Citizen participation -->
+<section class="panel mt-4">
+
+    <div class="row align-items-center g-3">
+
+        <div class="col-lg-8">
+
+            <span class="eyebrow">CITIZEN PARTICIPATION</span>
+
+            <h3 class="mt-2">Have a question? We want to hear from you.</h3>
+
+            <p class="text-muted mb-0">
+                Ask questions about public spending or development projects.
+                Send your inquiry to the relevant department and follow its response.
+            </p>
+
+        </div>
+
+        <div class="col-lg-4">
+
+            {% if user.is_authenticated %}
+
+                <a href="{% url 'inquiry_create' %}"
+                   class="btn btn-primary mb-2">
+                    Ask a Question
+                </a>
+
+                <a href="{% url 'my_inquiries' %}"
+                   class="btn btn-outline-primary mb-2">
+                    My Questions
+                </a>
+
+            {% else %}
+
+                <a href="{% url 'register' %}"
+                   class="btn btn-primary mb-2">
+                    Join as a Citizen
+                </a>
+
+                <a href="{% url 'login' %}"
+                   class="btn btn-outline-primary mb-2">
+                    Login
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- About -->
+<section class="mt-4 p-4 rounded-4"
+         style="background: #eaf1f6; border: 1px solid #e3e9ef;">
+
+    <h4>About Budget Drishti</h4>
+
+    <p class="text-muted mb-0">
+        Budget Drishti is a citizen-focused demonstration platform
+        that makes budget information and local development activities
+        easier to understand. It helps citizens explore estimated
+        public spending, follow development projects and communicate
+        with relevant departments.
+    </p>
+
+</section>
+
+{% endblock %}
+
+
+
+{% block scripts %}
+
+<script>
+    // Development project progress
+    document.querySelectorAll("[data-progress]").forEach(function (bar) {
+        const progress = Number(bar.dataset.progress);
+        const safeProgress = Math.min(100, Math.max(0, progress || 0));
+        bar.style.width = safeProgress + "%";
+    });
+
+    // Sector budget allocation share
+    const budgetPanel = document.querySelector("[data-total-budget]");
+
+    if (budgetPanel) {
+        const totalBudget = Number(budgetPanel.dataset.totalBudget);
+
+        document.querySelectorAll("[data-budget]").forEach(function (bar) {
+            const sectorBudget = Number(bar.dataset.budget);
+            const percentage = totalBudget > 0
+                ? (sectorBudget / totalBudget) * 100
+                : 0;
+
+            bar.style.width = Math.min(100, Math.max(0, percentage)) + "%";
+        });
+    }
+</script>
+
+{% endblock %}
