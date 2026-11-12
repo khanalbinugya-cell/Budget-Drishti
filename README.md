@@ -145,5 +145,6 @@ Estimated figures must never be presented as verified official government statis
 - Security review and production deployment configuration.
 
 ---
+Deployment configuration updated.
 
 **Budget Drishti — Public Budget. Our Right.**
