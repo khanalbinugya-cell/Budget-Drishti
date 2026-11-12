@@ -8,3 +8,5 @@ staticfiles/
 .vscode/
 *.log
 .DS_Store
+.neon
+node_modules/
